@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "NotebookLM Autosave",
+  "version": "1.0",
+  "description": "Automatically saves your work in NotebookLM.",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["*://notebooklm.google.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
