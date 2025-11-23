@@ -1,18 +1,15 @@
 import SwiftUI
 
 struct CSVSelectionView: View {
-    @State private var flashcards: [Flashcard] = []
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var isFilePickerPresented = false
-    @State private var selectedFileURL: URL?
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
 
-    private let csvParser = CSVParser()
-
     var body: some View {
         VStack {
-            if let url = selectedFileURL {
-                Text("Selected file: \(url.lastPathComponent)")
+            if let job = viewModel.currentJob {
+                Text("Loaded file: \(URL(fileURLWithPath: job.csvFilePath).lastPathComponent)")
                     .padding()
             }
 
@@ -28,11 +25,10 @@ struct CSVSelectionView: View {
             ) { result in
                 switch result {
                 case .success(let url):
-                    self.selectedFileURL = url
                     do {
-                        self.flashcards = try csvParser.parse(filePath: url.path)
+                        try viewModel.loadCSV(from: url)
                     } catch {
-                        self.errorMessage = "Error parsing CSV: \(error.localizedDescription)"
+                        self.errorMessage = "Error loading CSV: \(error.localizedDescription)"
                         self.showErrorAlert = true
                     }
                 case .failure(let error):
@@ -44,8 +40,8 @@ struct CSVSelectionView: View {
                 Alert(title: Text("Error"), message: Text(errorMessage ?? "An unknown error occurred"), dismissButton: .default(Text("OK")))
             }
 
-            if !flashcards.isEmpty {
-                List(flashcards, id: \.question) { flashcard in
+            if !viewModel.flashcards.isEmpty {
+                List(viewModel.flashcards, id: \.question) { flashcard in
                     VStack(alignment: .leading) {
                         Text("Question: \(flashcard.question)").font(.headline)
                         Text("Answer: \(flashcard.answer)").font(.subheadline)

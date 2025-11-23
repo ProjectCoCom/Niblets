@@ -1,42 +1,38 @@
 import SwiftUI
 
 struct JobProgressView: View {
-    @State private var progress = 0.5 // Example progress
-    @State private var successfulPosts = 23
-    @State private var failedPosts = 1
-    @State private var skippedPosts = 1
-    @State private var totalPosts = 50
-    @State private var elapsedTime = "2m 5s"
-    @State private var remainingTime = "~2m 5s"
+    @EnvironmentObject var viewModel: AppViewModel
+    @AppStorage("commentOption") private var commentOption = "immediate"
+    @AppStorage("commentDelay") private var commentDelay = 1
 
     var body: some View {
         VStack {
-            Text("Processing: \(Int(progress * 100))%")
+            Text("Processing: \(Int(viewModel.postingProgress * 100))%")
                 .font(.title)
                 .padding()
 
-            ProgressView(value: progress)
+            ProgressView(value: viewModel.postingProgress)
                 .padding()
 
             GroupBox(label: Text("Progress Stats")) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Processed: \(successfulPosts + failedPosts + skippedPosts)/\(totalPosts)")
-                    Text("Successful: \(successfulPosts)")
-                    Text("Failed: \(failedPosts)")
-                    Text("Skipped: \(skippedPosts)")
-                    Divider()
-                    Text("Elapsed Time: \(elapsedTime)")
-                    Text("Remaining Time: \(remainingTime)")
+                    Text("Processed: \(viewModel.successfulPosts + viewModel.failedPosts + viewModel.skippedPosts)/\(viewModel.flashcards.count)")
+                    Text("Successful: \(viewModel.successfulPosts)")
+                    Text("Failed: \(viewModel.failedPosts)")
+                    Text("Skipped: \(viewModel.skippedPosts)")
                 }
                 .padding()
             }
             .padding()
 
             Button(action: {
-                // Logic to cancel the operation
+                Task {
+                    await viewModel.startPosting(commentOption: commentOption, commentDelay: commentDelay)
+                }
             }) {
-                Text("Cancel")
+                Text("Start Posting")
             }
+            .disabled(viewModel.isPosting)
             .padding()
         }
         .navigationTitle("Posting Progress")
@@ -46,5 +42,6 @@ struct JobProgressView: View {
 struct JobProgressView_Previews: PreviewProvider {
     static var previews: some View {
         JobProgressView()
+            .environmentObject(AppViewModel())
     }
 }

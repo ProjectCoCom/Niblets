@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var viewModel: AppViewModel
+
     var body: some View {
         NavigationView {
             List {
@@ -25,6 +27,16 @@ struct ContentView: View {
 
             Text("Select an option")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .alert(isPresented: $viewModel.isShowingResumePrompt) {
+            Alert(
+                title: Text("Incomplete Job Found"),
+                message: Text("Do you want to resume the incomplete job from where you left off?"),
+                primaryButton: .default(Text("Resume"), action: {
+                    viewModel.resumeJob()
+                }),
+                secondaryButton: .cancel()
+            )
         }
     }
 }

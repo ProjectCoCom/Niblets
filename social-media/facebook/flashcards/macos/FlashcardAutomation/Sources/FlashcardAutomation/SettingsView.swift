@@ -3,7 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("postInterval") private var postInterval = 5.0
     @AppStorage("useColorCycling") private var useColorCycling = false
-    @AppStorage("commentDelay") private var commentDelay = 0
+    @AppStorage("commentOption") private var commentOption = "immediate"
+    @AppStorage("commentDelay") private var commentDelay = 1
 
     let colorPresets = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Pink", "Black"]
     @State private var selectedColor = "Blue"
@@ -28,13 +29,15 @@ struct SettingsView: View {
             }
 
             Section(header: Text("Comments")) {
-                Picker("Comment Delay", selection: $commentDelay) {
-                    Text("Immediate").tag(0)
-                    Text("1 Hour").tag(1)
-                    Text("2 Hours").tag(2)
-                    Text("6 Hours").tag(6)
-                    Text("12 Hours").tag(12)
-                    Text("24 Hours").tag(24)
+                Picker("Comment Option", selection: $commentOption) {
+                    Text("Post Immediately").tag("immediate")
+                    Text("Schedule Comment").tag("delayed")
+                    Text("No Comment").tag("none")
+                }
+                .pickerStyle(SegmentedPickerStyle())
+
+                if commentOption == "delayed" {
+                    Stepper("Delay: \(commentDelay) hour(s)", value: $commentDelay, in: 1...48)
                 }
             }
         }
